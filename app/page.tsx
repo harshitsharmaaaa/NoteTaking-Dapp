@@ -144,6 +144,9 @@ export default function Home() {
   const wallet = useWallet();
   
   const [loading, setLoading] = useState(false);
+  const [Createloading, setCreateLoading] = useState(false);
+  const [deletedLoading,setDeleteLoading] = useState(false);
+  const [UpdateLoading,setUpdateLoading] = useState(false);
   const [notes, setNotes] = useState<any[]>([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -208,7 +211,7 @@ export default function Home() {
     }
     if(!wallet.publicKey) return;
     try {
-      setLoading(true);
+      setCreateLoading(true);
       
       const program = await gerProgram();
       if(!program) return;
@@ -230,7 +233,7 @@ export default function Home() {
       console.log("Error Creating Note",error);
       setMessage("Error Creating Note");
     }
-    setLoading(false);
+    setCreateLoading(false);
   } 
 
 
@@ -245,7 +248,7 @@ export default function Home() {
       setMessage("Content cannot be longer than 1000 chars");
       return;
     }
-    setLoading(true);
+    setUpdateLoading(true);
     try {
       const program = await gerProgram();
       if(!program) return;
@@ -266,11 +269,11 @@ export default function Home() {
       console.log("Error Updating Note",error);
       setMessage("Error Updating Note");
     }
-    setLoading(false);
+    setUpdateLoading(false);
   }
 
   const DeleteNote = async (note:any)=>{
-    setLoading(true);
+    setDeleteLoading(true);
     try {
       const program = await gerProgram();
       if(!program) return;
@@ -289,7 +292,7 @@ export default function Home() {
       console.log("Error Deleting Note",error);
       setMessage("Error Deleting Note");
     }
-    setLoading(false);
+    setDeleteLoading(false);
   }
 
   useEffect(()=>{
@@ -320,10 +323,16 @@ export default function Home() {
         <textarea name="Content" value={content} onChange={(e)=>setContent(e.target.value)} placeholder="Content" rows={5} className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
         </div>
         <div className="flex justify-end">
-          <button disabled={loading ||!title.trim().length || !content.trim().length} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-blue-300 disabled:cursor-not-allowed "  onClick={()=>CreateNote(title,content)}>{loading?"Loading...":"Create Note"}</button>
+          <button disabled={Createloading ||!title.trim().length || !content.trim().length} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-blue-300 disabled:cursor-not-allowed "  onClick={()=>CreateNote(title,content)}>{Createloading?"Loading...":"Create Note"}</button>
         </div>
       </div>
-      <div>
+      <div className="mt-6">
+        <h2 className=" text-2xl tx-bold mb-6 text-gray-800">
+          Your Notes
+        </h2>
+        {loading?<div className="flex justify-center items-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900">Loading Notes...</div>
+        </div>:<div>
         {notes?.map((note:any)=>{
           return (
             <div className="mb-6 border-b border-gray-200 pb-6" key={note.account.Title}>
@@ -338,10 +347,10 @@ export default function Home() {
                       onChange={(e)=>setEditContent(e.target.value)} maxLength={1000} placeholder="Write the content to update" rows={5}
                     ></textarea>
                     <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-blue-300 disabled:cursor-not-allowed"
-                    disabled={loading}
+                    disabled={UpdateLoading}
                     onClick={()=>{UpdateNote(note),seteditNote(null), setEditContent("")}}
                     >
-                      {loading?"Updating...":"Update"}
+                      {UpdateLoading?"Updating...":"Update"}
                     </button>
                   </div> :null}
                   {editNote? <div className="flex justify-end">
@@ -370,15 +379,16 @@ export default function Home() {
                     {loading?"Updating...":"Edit"}
                   </button>
                   <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 disabled:bg-red-300 disabled:cursor-not-allowed"
-                   disabled={loading }
+                   disabled={deletedLoading }
                    onClick={()=>DeleteNote(note)}
                   >
-                    {loading?"Deleting...":"Delete"}
+                    {deletedLoading?"Deleting...":"Delete"}
                   </button>
                 </div>
             </div>
           )
         })}
+        </div>}
       </div>
     </div>
   );
